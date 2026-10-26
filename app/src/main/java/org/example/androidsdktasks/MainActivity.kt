@@ -2,7 +2,6 @@ package org.example.androidsdktasks
 
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.provider.ContactsContract
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -10,10 +9,15 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import org.example.androidsdktasks.data.ContactsRepositoryImpl
 import org.example.androidsdktasks.databinding.ActivityMainBinding
+import org.example.androidsdktasks.domain.usecase.GetContactsUseCase
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
+    private val getContactsUseCase by lazy {
+        GetContactsUseCase(ContactsRepositoryImpl(contentResolver))
+    }
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -53,43 +57,17 @@ class MainActivity : AppCompatActivity() {
             requestPermissionLauncher.launch(android.Manifest.permission.READ_CONTACTS)
         }
     }
+    private fun loadContacts() {
+        val contacts = getContactsUseCase()
 
-    private fun loadContacts(){
-
-        val contactsUri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI
-
-        val projection = arrayOf(
-            ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
-            ContactsContract.CommonDataKinds.Phone.NUMBER
-        )
-
-        val sortOrder = "${ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME} ASC"
-
-        val contactsBuilder = StringBuilder()
-        var count = 0
-
-        val cursor = contentResolver.query(contactsUri, projection, null, null, sortOrder)
-
-        cursor?.use { c->
-
-            val nameIndex = c.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME)
-            val numberIndex = c.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)
-
-            while (c.moveToNext()) {
-                count++
-                val name = if (nameIndex != - 1) c.getString(nameIndex) else "Без имени"
-                val number = if (nameIndex != - 1) c.getString(numberIndex) else "Без номера"
-
-                contactsBuilder.append("$count. $name: $number\n")
-            }
-
-            if (count > 0){
-                binding.tvContactsList.text = contactsBuilder.toString()
-                Toast.makeText(this, "Загружено контактов: $count", Toast.LENGTH_SHORT).show()
-            } else {
-                binding.tvContactsList.text = "Контакты не найдены"
-            }
-
+        if (contacts.isNotEmpty()) {
+            val contactsText = contacts.mapIndexed { index, contact ->
+                "${index + 1}. ${contact.name}: ${contact.phoneNumber}"
+            }.joinToString("\n")
+            binding.tvContactsList.text = contactsText
+            Toast.makeText(this, "Загружено контактов: ${contacts.size}", Toast.LENGTH_SHORT).show()
+        } else {
+            binding.tvContactsList.text = "Контакты не найдены"
         }
     }
 }
