@@ -1,9 +1,11 @@
 package org.example.androidsdktasks.presentation
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import org.example.androidsdktasks.domain.model.Contact
 import org.example.androidsdktasks.domain.usecase.GetContactsUseCase
 
@@ -19,11 +21,14 @@ class ContactsViewModel(
     private val _uiState = MutableStateFlow<ContactsUiState>(ContactsUiState.Idle)
     val uiState: StateFlow<ContactsUiState> = _uiState.asStateFlow()
     fun loadContacts() {
-        val contacts = getContactsUseCase()
-        if (contacts.isNotEmpty()) {
-            _uiState.value = ContactsUiState.Success(contacts)
-        } else {
-            _uiState.value = ContactsUiState.Empty
+        viewModelScope.launch {
+            val contacts = getContactsUseCase()
+            if (contacts.isEmpty()) {
+                _uiState.value = ContactsUiState.Empty
+            } else {
+                _uiState.value = ContactsUiState.Success(contacts)
+            }
         }
+
     }
 }

@@ -2,11 +2,17 @@ package org.example.androidsdktasks.data
 
 import android.content.ContentResolver
 import android.provider.ContactsContract
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.example.androidsdktasks.domain.model.Contact
 import org.example.androidsdktasks.domain.repository.ContactsRepository
 
-class ContactsRepositoryImpl(private val contentResolver: ContentResolver) : ContactsRepository {
-    override fun getContacts(): List<Contact> {
+class ContactsRepositoryImpl(
+    private val contentResolver: ContentResolver,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO
+    ) : ContactsRepository {
+    override suspend fun getContacts(): List<Contact> = withContext(ioDispatcher) {
         val contacts = mutableListOf<Contact>()
 
         val contactsUri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI
@@ -31,7 +37,7 @@ class ContactsRepositoryImpl(private val contentResolver: ContentResolver) : Con
 
             }
         }
-        return contacts
+        contacts
 
     }
 
