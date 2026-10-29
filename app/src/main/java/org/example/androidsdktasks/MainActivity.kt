@@ -57,7 +57,7 @@ class MainActivity : AppCompatActivity() {
             addAction(Intent.ACTION_POWER_DISCONNECTED)
         }
 
-        ContextCompat.registerReceiver(this, powerReceiver, filter, ContextCompat.RECEIVER_EXPORTED)
+        ContextCompat.registerReceiver(this, powerReceiver, filter, ContextCompat.RECEIVER_NOT_EXPORTED)
     }
 
     override fun onStop() {
