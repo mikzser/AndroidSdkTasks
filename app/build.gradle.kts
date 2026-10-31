@@ -9,7 +9,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "org.example.androidsdktasks"
+        applicationId = "org.example.androidsdktasks.task4"
         minSdk = 26
         targetSdk = 37
         versionCode = 1
