@@ -116,6 +116,12 @@ class MainActivity : AppCompatActivity() {
 
         msg.replyTo = clientMessenger
 
-        serviceMessenger?.send(msg)
+        try {
+            serviceMessenger?.send(msg)
+        } catch (e: android.os.RemoteException) {
+            // Если сервис в процессе :remote умер или недоступен
+            Toast.makeText(this, "Ошибка связи с сервисом: процесс недоступен", Toast.LENGTH_SHORT).show()
+            binding.tvProcessInfo.text = "Ошибка IPC: связь с сервисом потеряна"
+        }
     }
 }
